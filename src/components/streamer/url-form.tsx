@@ -1,22 +1,11 @@
 "use client";
 
-import { Link2, Loader2, Sparkles, Zap } from "lucide-react";
+import { Link2, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import type { ResolveError } from "@/lib/types";
-
-const EXAMPLES: { label: string; url: string }[] = [
-  {
-    label: "Example 1 · S02E21",
-    url: "https://drive.google.com/file/d/1dLyB8NzZg9rlnUX_T1joEsWO4U1WEpIn/view",
-  },
-  {
-    label: "Example 2 · S02E22",
-    url: "https://drive.google.com/file/d/19gEdGer_yVLJe4fUk-ITXVC0heq9eEY2/view",
-  },
-];
 
 interface UrlFormProps {
   url: string;
@@ -74,28 +63,6 @@ export function UrlForm({ url, onUrlChange, onSubmit, loading, error, onDismissE
           )}
         </Button>
       </form>
-
-      {/* Examples */}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" />
-          Try an example:
-        </span>
-        {EXAMPLES.map((ex) => (
-          <button
-            key={ex.label}
-            type="button"
-            disabled={loading}
-            onClick={() => {
-              onUrlChange(ex.url);
-              onDismissError();
-            }}
-            className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground disabled:opacity-50"
-          >
-            {ex.label}
-          </button>
-        ))}
-      </div>
 
       {/* Error */}
       {error && (

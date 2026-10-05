@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Google Drive Video Streamer — Clean VLC-ready stream links",
+    title: "DriveStream | Google Drive Video",
   description:
     "Paste a Google Drive video link and get a clean, stable stream URL with HTTP Range/206 seeking support that works directly in VLC, mpv and any HTTP player. No expiring Google tokens.",
   keywords: [
@@ -27,12 +27,13 @@ export const metadata: Metadata = {
     "206 Partial Content",
     "drive streamer",
   ],
-  applicationName: "Google Drive Video Streamer",
+  applicationName: "DriveStream",
   icons: {
     icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   openGraph: {
-    title: "Google Drive Video Streamer",
+  title: "DriveStream | Google Drive Video",
     description:
       "Clean, token-free VLC stream links for Google Drive videos with true HTTP Range seeking.",
     type: "website",

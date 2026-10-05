@@ -34,7 +34,7 @@ export function Header() {
           <Logo className="h-9 w-9 shrink-0" />
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-tight sm:text-base">
-              Google Drive Video Streamer
+              DriveStream
             </span>
             <span className="hidden text-[11px] text-muted-foreground sm:block">
               Clean stream links for VLC &amp; any HTTP player
