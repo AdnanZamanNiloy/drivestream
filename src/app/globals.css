@@ -1,0 +1,187 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.985 0.004 160);
+  --foreground: oklch(0.185 0.015 165);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.185 0.015 165);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.185 0.015 165);
+  --primary: oklch(0.558 0.144 157);
+  --primary-foreground: oklch(0.985 0.004 160);
+  --secondary: oklch(0.96 0.008 160);
+  --secondary-foreground: oklch(0.24 0.02 165);
+  --muted: oklch(0.96 0.008 160);
+  --muted-foreground: oklch(0.5 0.015 165);
+  --accent: oklch(0.94 0.025 158);
+  --accent-foreground: oklch(0.24 0.03 160);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.915 0.008 160);
+  --input: oklch(0.915 0.008 160);
+  --ring: oklch(0.558 0.144 157);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.915 0.008 160);
+  --sidebar-ring: oklch(0.558 0.144 157);
+}
+
+.dark {
+  --background: oklch(0.16 0.012 170);
+  --foreground: oklch(0.96 0.004 160);
+  --card: oklch(0.205 0.014 170);
+  --card-foreground: oklch(0.96 0.004 160);
+  --popover: oklch(0.21 0.014 170);
+  --popover-foreground: oklch(0.96 0.004 160);
+  --primary: oklch(0.735 0.15 160);
+  --primary-foreground: oklch(0.14 0.03 160);
+  --secondary: oklch(0.26 0.016 170);
+  --secondary-foreground: oklch(0.96 0.004 160);
+  --muted: oklch(0.26 0.016 170);
+  --muted-foreground: oklch(0.68 0.015 168);
+  --accent: oklch(0.28 0.02 168);
+  --accent-foreground: oklch(0.96 0.004 160);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.735 0.15 160);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.735 0.15 160);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Ambient emerald glow behind the hero */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% -5%, oklch(0.7 0.16 160 / 22%), transparent 70%),
+    radial-gradient(ellipse 35% 30% at 85% 15%, oklch(0.7 0.12 180 / 12%), transparent 70%);
+}
+
+.dark .hero-glow {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% -5%, oklch(0.65 0.17 160 / 28%), transparent 70%),
+    radial-gradient(ellipse 35% 30% at 85% 15%, oklch(0.6 0.13 185 / 16%), transparent 70%);
+}
+
+/* Emerald gradient headline accent */
+.text-gradient {
+  background: linear-gradient(120deg, oklch(0.58 0.15 158), oklch(0.72 0.15 168), oklch(0.8 0.13 140));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dark .text-gradient {
+  background: linear-gradient(120deg, oklch(0.75 0.16 160), oklch(0.85 0.14 150));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Slim styled scrollbars for URL overflow areas */
+.slim-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.6 0.1 160 / 40%) transparent;
+}
+.slim-scrollbar::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0.1 160 / 40%);
+  border-radius: 999px;
+}
+
+/* Pulsing dot for the "live" indicator */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+
+/* Marquee-free subtle grid pattern for section backgrounds */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, oklch(0.5 0.05 160 / 7%) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.5 0.05 160 / 7%) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%);
+}
