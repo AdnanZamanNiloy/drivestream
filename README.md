@@ -6,11 +6,11 @@
 
 Plays in VLC, mpv, IINA, and browser `<video>` tags, with instant seeking.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://drivestream.space-z.ai/)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://drivestream-alpha.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-black)
 
-[**Live Demo**](https://drivestream.space-z.ai/) · [Report a Bug](https://github.com/AdnanZamanNiloy/drivestream/issues)
+[**Live Demo**](https://drivestream-alpha.vercel.app/) · [Report a Bug](https://github.com/AdnanZamanNiloy/drivestream/issues)
 
 </div>
 
@@ -31,23 +31,23 @@ Plays in VLC, mpv, IINA, and browser `<video>` tags, with instant seeking.
   <img src="public/copy-link.png" alt="Google Drive Share menu with Copy link and Anyone with the link access" width="520">
 </p>
 
-**2. Paste it into [DriveStream](https://drivestream.space-z.ai/)** to get a permanent stream URL, along with the file name, size, and type.
+**2. Paste it into [DriveStream](https://drivestream-alpha.vercel.app/)** to get a permanent stream URL, along with the file name, size, and type.
 
 **3. Open the URL in any player.**
 
 ```bash
-vlc  "https://drivestream.space-z.ai/api/stream/<fileId>"
-mpv  "https://drivestream.space-z.ai/api/stream/<fileId>"
+vlc  "https://drivestream-alpha.vercel.app/api/stream/<fileId>"
+mpv  "https://drivestream-alpha.vercel.app/api/stream/<fileId>"
 ```
 
 ```html
-<video src="https://drivestream.space-z.ai/api/stream/<fileId>" controls></video>
+<video src="https://drivestream-alpha.vercel.app/api/stream/<fileId>" controls></video>
 ```
 
 Verify range support with:
 
 ```bash
-curl -I "https://drivestream.space-z.ai/api/stream/<fileId>"   # expect 206 / Accept-Ranges
+curl -I "https://drivestream-alpha.vercel.app/api/stream/<fileId>"   # expect 206 / Accept-Ranges
 ```
 
 ## Supported Inputs
