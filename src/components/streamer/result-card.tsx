@@ -8,9 +8,11 @@ import {
   Copy,
   FileVideo,
   Gauge,
+  Loader2,
   MonitorPlay,
   PlayCircle,
   ShieldCheck,
+  Stethoscope,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +42,11 @@ export function ResultCard({ result, onOpenInVlc, onToast }: ResultCardProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [diag, setDiag] = useState<
+    | { state: "idle" }
+    | { state: "running" }
+    | { state: "done"; ok: boolean; status: number; contentRange: string | null; acceptRanges: string | null; detail: string }
+  >({ state: "idle" });
 
   const playable = isBrowserPlayable(file.mimeType, file.name);
 
@@ -48,6 +55,44 @@ export function ResultCard({ result, onOpenInVlc, onToast }: ResultCardProps) {
       if (copyTimer.current) clearTimeout(copyTimer.current);
     };
   }, []);
+
+  /**
+   * Run a real 1KB Range request against the stream URL from the user's own
+   * network — exactly what VLC's first request looks like. Surfaces the exact
+   * HTTP status, Content-Range and Accept-Ranges values.
+   */
+  const runRangeTest = async () => {
+    setDiag({ state: "running" });
+    try {
+      const res = await fetch(streamUrl, {
+        headers: { Range: "bytes=0-1023" },
+        cache: "no-store",
+      });
+      const h = res.headers;
+      const body = res.status === 206 ? null : await res.text().catch(() => "");
+      if (res.status === 206) await res.body?.cancel().catch(() => {});
+      setDiag({
+        state: "done",
+        ok: res.status === 206,
+        status: res.status,
+        contentRange: h.get("content-range"),
+        acceptRanges: h.get("accept-ranges"),
+        detail:
+          res.status === 206
+            ? "Stream is healthy — VLC can play and seek this URL."
+            : body?.slice(0, 140) || `Unexpected HTTP ${res.status} response.`,
+      });
+    } catch (err) {
+      setDiag({
+        state: "done",
+        ok: false,
+        status: 0,
+        contentRange: null,
+        acceptRanges: null,
+        detail: (err as Error).message || "Network request failed.",
+      });
+    }
+  };
 
   const copy = async (text: string, label: string) => {
     try {
@@ -71,7 +116,7 @@ export function ResultCard({ result, onOpenInVlc, onToast }: ResultCardProps) {
     >
       <div className="overflow-hidden rounded-3xl border border-primary/25 bg-card shadow-xl shadow-primary/10">
         {/* ---- Card header ---- */}
-        <div className="flex flex-wrap items-start gap-4 border-b border-border/60 bg-gradient-to-br from-primary/12 via-primary/5 to-transparent p-5 sm:p-6">
+        <div className="flex flex-wrap items-start gap-4 border-b border-border/60 bg-primary/8 p-5 sm:p-6">
           {/* Thumbnail */}
           <div className="relative hidden h-24 w-40 shrink-0 overflow-hidden rounded-xl border border-border/60 bg-muted sm:block">
             <img
@@ -221,13 +266,70 @@ export function ResultCard({ result, onOpenInVlc, onToast }: ResultCardProps) {
               </span>
               <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
-            <CollapsibleContent className="grid gap-x-8 gap-y-2 px-2 pb-2 pt-3 text-sm sm:grid-cols-2">
-              <DetailRow label="File ID" value={file.id} mono />
-              <DetailRow label="MIME type" value={file.mimeType} mono />
-              <DetailRow label="Total size" value={`${formatBytes(file.size)}${file.size ? ` (${file.size.toLocaleString()} bytes)` : ""}`} />
-              <DetailRow label="Range requests" value={file.supportsRange ? "Supported — 206 Partial Content" : "Unknown"} />
-              <DetailRow label="Resolved" value={new Date(resolvedAt).toLocaleString()} />
-              <DetailRow label="Upstream tokens exposed" value="None — stripped by proxy" />
+            <CollapsibleContent className="px-2 pb-2 pt-3 text-sm">
+              {/* ---- Stream health check (real Range request, like VLC's first probe) ---- */}
+              <div className="mb-4 rounded-xl border border-border/60 bg-muted/40 p-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="text-sm">
+                    <p className="font-medium">Stream health check</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Sends a real <span className="font-mono">Range: bytes=0-1023</span> request from your device —
+                      the same handshake VLC performs.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void runRangeTest()}
+                    disabled={diag.state === "running"}
+                    className="h-8 rounded-lg px-3 text-xs font-semibold"
+                  >
+                    {diag.state === "running" ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Testing…
+                      </>
+                    ) : (
+                      <>
+                        <Stethoscope className="h-3.5 w-3.5" />
+                        Test stream
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {diag.state === "done" && (
+                  <div
+                    className={`mt-3 rounded-lg border p-2.5 text-xs ${
+                      diag.ok
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "border-destructive/30 bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    <p className="font-semibold">
+                      {diag.ok
+                        ? `HTTP ${diag.status} Partial Content — seekable`
+                        : `Stream check failed${diag.status ? ` (HTTP ${diag.status})` : ""}`}
+                    </p>
+                    {diag.contentRange && (
+                      <p className="mt-1 font-mono opacity-80">content-range: {diag.contentRange}</p>
+                    )}
+                    {diag.acceptRanges && (
+                      <p className="font-mono opacity-80">accept-ranges: {diag.acceptRanges}</p>
+                    )}
+                    <p className="mt-1.5 opacity-80">{diag.detail}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                <DetailRow label="File ID" value={file.id} mono />
+                <DetailRow label="MIME type" value={file.mimeType} mono />
+                <DetailRow label="Total size" value={`${formatBytes(file.size)}${file.size ? ` (${file.size.toLocaleString()} bytes)` : ""}`} />
+                <DetailRow label="Range requests" value={file.supportsRange ? "Supported — 206 Partial Content" : "Unknown"} />
+                <DetailRow label="Resolved" value={new Date(resolvedAt).toLocaleString()} />
+                <DetailRow label="Upstream tokens exposed" value="None — stripped by proxy" />
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>

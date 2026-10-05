@@ -81,6 +81,12 @@ export default function Home() {
         }
 
         if (data.type === "file") {
+          // Rebuild absolute URLs from the browser's own origin — this is the
+          // address VLC will actually connect to, and the only source of truth
+          // that survives every proxy/gateway chain.
+          const origin = window.location.origin;
+          data.streamUrl = `${origin}/api/stream/${data.file.id}`;
+          data.thumbnailUrl = `${origin}/api/thumbnail/${data.file.id}`;
           setFileResult(data);
           // Push into history (dedup by id, newest first, capped).
           const entry: HistoryItem = {
@@ -94,6 +100,8 @@ export default function Home() {
           };
           persistHistory([entry, ...history.filter((h) => h.id !== entry.id)].slice(0, HISTORY_MAX));
         } else {
+          const origin = window.location.origin;
+          for (const f of data.files) f.streamUrl = `${origin}/api/stream/${f.id}`;
           setFolderResult(data);
         }
       } catch {
@@ -151,11 +159,8 @@ export default function Home() {
 
       <main className="flex-1">
         {/* ================= HERO + GENERATOR ================= */}
-        <section id="generator" className="relative overflow-hidden">
-          <div className="hero-glow" aria-hidden="true" />
-          <div className="absolute inset-0 grid-bg" aria-hidden="true" />
-
-          <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-14 sm:px-6 sm:pt-20">
+        <section id="generator" className="pb-10 pt-14 sm:pt-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
                 <Zap className="h-3.5 w-3.5" />
@@ -178,7 +183,7 @@ export default function Home() {
                 {TRUST_CHIPS.map((chip) => (
                   <li
                     key={chip.label}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
                   >
                     <chip.icon className="h-3.5 w-3.5 text-primary" />
                     {chip.label}
@@ -189,7 +194,7 @@ export default function Home() {
 
             {/* The generator card */}
             <div className="mx-auto mt-10 max-w-3xl">
-              <div className="rounded-3xl border border-border/70 bg-card/85 p-5 shadow-2xl shadow-black/5 backdrop-blur-xl sm:p-6">
+              <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-lg shadow-black/5 sm:p-6">
                 <UrlForm
                   url={url}
                   onUrlChange={setUrl}

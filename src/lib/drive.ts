@@ -221,23 +221,36 @@ export function looksLikeMedia(name: string | null, mimeType: string): boolean {
 /**
  * Fetch upstream with a client-supplied Range header (optional).
  * Follows the rare "virus scan warning" confirmation page automatically.
+ *
+ * `timeoutMs`: 0 means NO timeout — required for long-lived video streams.
+ * A 20s default is only appropriate for quick probes (metadata, HEAD).
  */
 export async function fetchUpstream(
   fileId: string,
-  opts: { range?: string | null; resourceKey?: string; method?: "GET" | "HEAD"; signal?: AbortSignal } = {},
+  opts: {
+    range?: string | null;
+    resourceKey?: string;
+    method?: "GET" | "HEAD";
+    timeoutMs?: number;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<Response> {
-  const { range, resourceKey, method = "GET", signal } = opts;
+  const { range, resourceKey, method = "GET", timeoutMs = 20_000, signal } = opts;
+
+  const headers: Record<string, string> = {
+    "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
+    Accept: "*/*",
+    // Never let upstream compress the body — Content-Length must match raw bytes.
+    "Accept-Encoding": "identity",
+  };
+  if (range) headers.Range = range;
 
   let res = await fetch(buildUpstreamUrl(fileId, resourceKey), {
     method,
-    headers: {
-      ...(range ? { Range: range } : {}),
-      "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
-      Accept: "*/*",
-    },
+    headers,
     redirect: "follow",
-    signal: signal ?? AbortSignal.timeout(20_000),
-    cache: "no-store" as any,
+    signal: signal ?? (timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined),
+    cache: "no-store" as RequestCache,
   });
 
   // Google occasionally answers with an HTML interstitial (virus-scan warning
@@ -246,8 +259,14 @@ export async function fetchUpstream(
   if (ctype.includes("text/html") && method === "GET") {
     const html = await res.text().catch(() => "");
     const retried = await retryConfirmationForm(fileId, html, range, signal);
-    if (retried) res = retried;
-    else if (html) {
+    if (retried) {
+      res = retried;
+      // Retry also hit an interstitial → classify it precisely.
+      if ((retried.headers.get("content-type") ?? "").includes("text/html")) {
+        const html2 = await retried.text().catch(() => "");
+        classifyHtmlError(retried.status, html2, fileId);
+      }
+    } else if (html) {
       classifyHtmlError(res.status, html, fileId);
     }
   }
@@ -293,6 +312,7 @@ async function retryConfirmationForm(
     headers: {
       ...(range ? { Range: range } : {}),
       "Content-Type": "application/x-www-form-urlencoded",
+      "Accept-Encoding": "identity",
       "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
     },
     body,
@@ -365,7 +385,8 @@ export async function probeFile(fileId: string, resourceKey?: string): Promise<D
 
   const contentType = (res.headers.get("content-type") ?? "").split(";")[0].trim();
   if (contentType.includes("text/html")) {
-    classifyHtmlError(res.status, "html", fileId);
+    const html = await res.text().catch(() => "");
+    classifyHtmlError(res.status, html, fileId);
   }
 
   if (res.status === 404) {

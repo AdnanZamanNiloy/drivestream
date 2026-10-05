@@ -51,3 +51,24 @@ Stage Summary:
 - All 9 verification areas passed: rendering, golden path, copy, video playback, seeking, error states, theme, mobile, footer.
 - Screenshots saved to /home/z/my-project/download/: desktop-preview.png, light-mode.png, mobile-result.png, desktop-final.png.
 - App is fully functional and ready for delivery.
+
+---
+Task ID: 3
+Agent: Main agent (Super Z)
+Task: Fix "stream URL doesn't work in VLC" + switch UI to solid color background.
+
+Work Log:
+- Root cause found: fetchUpstream applied AbortSignal.timeout(20_000) to ALL upstream fetches — video streams died exactly 20s in, killing VLC sustained playback (browser tests passed earlier because buffering completed quickly).
+- Fix in src/lib/drive.ts: fetchUpstream now takes timeoutMs (default 20s for probes; 0 = no timeout). Added Accept-Encoding: identity to prevent upstream compression. Improved HTML error classification after confirm-form retry.
+- Fix in stream route: timeoutMs: 0 for streams + req.signal so upstream aborts only when the client disconnects; 304/416 statuses pass through spec-correct (no body); ASCII-safe content-disposition filename (Unicode names would throw); X-Accel-Buffering: no hint for reverse proxies.
+- Verified with slow-transfer tests: 10MB at 400k over 24.2s (direct) and 12.5MB at 250k over 48.7s through Caddy gateway layer — both complete with exit 0. Previously would abort at 20s.
+- URL origin robustness: resolve responses are now re-based client-side on window.location.origin in page.tsx (survives any proxy-header ambiguity); server-side URL remains as fallback.
+- Added "Stream health check" diagnostic in result card: sends real Range: bytes=0-1023 request from the user's device, displays HTTP status / content-range / accept-ranges — mirrors VLC's first handshake. Verified in browser: HTTP 206 Partial Content — seekable.
+- Solid background UI per request: removed hero-glow + grid-bg overlays and their CSS; replaced all translucent/backdrop-blur backgrounds (header, generator card, trust chips, footer) with solid bg-background/bg-card; result/folder card headers now flat bg-primary/8.
+- Fixed hydration mismatch: removed custom no-flash script that conflicted with next-themes' built-in flash prevention.
+- Re-verified end-to-end: resolve (usercontent URL with tokens → stripped), seek 206 with x-accel-buffering header, HEAD, video preview readyState 4 / duration 1338s / 720p, seek to 600s rebuffers at 581s, theme toggle both ways, mobile 390x844, lint clean, no console/hydration errors.
+
+Stage Summary:
+- VLC streaming fixed (20s timeout removed; verified 48.7s sustained transfer through the full gateway chain).
+- UI converted to solid-color backgrounds in both themes; hydration errors eliminated.
+- New in-app stream health check lets users verify the URL from their own network before opening VLC.

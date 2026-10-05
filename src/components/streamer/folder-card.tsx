@@ -21,7 +21,7 @@ export function FolderCard({ result, onSelectFile }: FolderCardProps) {
       aria-live="polite"
     >
       <div className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-xl">
-        <div className="flex items-center gap-3 border-b border-border/60 bg-gradient-to-br from-primary/12 via-primary/5 to-transparent p-5">
+        <div className="flex items-center gap-3 border-b border-border/60 bg-primary/8 p-5">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
             <FolderOpen className="h-5.5 w-5.5" />
           </span>

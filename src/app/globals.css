@@ -124,22 +124,6 @@
   }
 }
 
-/* Ambient emerald glow behind the hero */
-.hero-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 55% 45% at 50% -5%, oklch(0.7 0.16 160 / 22%), transparent 70%),
-    radial-gradient(ellipse 35% 30% at 85% 15%, oklch(0.7 0.12 180 / 12%), transparent 70%);
-}
-
-.dark .hero-glow {
-  background:
-    radial-gradient(ellipse 55% 45% at 50% -5%, oklch(0.65 0.17 160 / 28%), transparent 70%),
-    radial-gradient(ellipse 35% 30% at 85% 15%, oklch(0.6 0.13 185 / 16%), transparent 70%);
-}
-
 /* Emerald gradient headline accent */
 .text-gradient {
   background: linear-gradient(120deg, oklch(0.58 0.15 158), oklch(0.72 0.15 168), oklch(0.8 0.13 140));
@@ -178,10 +162,3 @@
 }
 
 /* Marquee-free subtle grid pattern for section backgrounds */
-.grid-bg {
-  background-image:
-    linear-gradient(to right, oklch(0.5 0.05 160 / 7%) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.5 0.05 160 / 7%) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 100%);
-}

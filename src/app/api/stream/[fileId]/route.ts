@@ -42,10 +42,18 @@ async function handle(req: NextRequest, ctx: RouteCtx): Promise<Response> {
       range,
       resourceKey,
       method: wantsHead ? "HEAD" : "GET",
+      // ⚠ Long-lived streams must NEVER have a fixed timeout — a movie can
+      // legitimately stream for hours. Abort only when the client disconnects.
+      timeoutMs: 0,
+      signal: req.signal,
     });
   } catch (err) {
     if (err instanceof DriveError) {
       return textError(err.status, `${err.message}${err.hint ? ` — ${err.hint}` : ""}`);
+    }
+    if ((err as Error)?.name === "AbortError") {
+      // Client went away — nothing to report.
+      return new Response(null, { status: 499, headers: { "cache-control": "no-store" } });
     }
     return textError(502, "Could not reach Google Drive. Please try again.");
   }
@@ -66,12 +74,15 @@ async function handle(req: NextRequest, ctx: RouteCtx): Promise<Response> {
     );
   }
 
-  if (upstream.status >= 400) {
+  if (upstream.status >= 400 && upstream.status !== 416) {
     return textError(502, `Google Drive returned HTTP ${upstream.status}.`);
   }
 
   const filename = filenameFromDisposition(upstream.headers.get("content-disposition"));
   const contentType = mimeFromFilename(filename, upstreamType || "application/octet-stream");
+
+  // Header values must be printable ASCII — RFC-decoded UTF-8 names would throw.
+  const asciiName = (filename ?? fileId).replace(/[^\x20-\x7E]/g, "_").replace(/["\\\r\n]/g, "");
 
   const headers = new Headers();
   const passthrough = [
@@ -87,21 +98,26 @@ async function handle(req: NextRequest, ctx: RouteCtx): Promise<Response> {
 
   headers.set("content-type", contentType);
   headers.set("accept-ranges", "bytes");
-  headers.set("content-disposition", `inline; filename="${(filename ?? fileId).replace(/["\r\n]/g, "")}"`);
+  headers.set("content-disposition", `inline; filename="${asciiName}"`);
   // Let browsers <video> and any CORS client use the stream directly.
   headers.set("access-control-allow-origin", "*");
   headers.set("access-control-allow-headers", "Range, Content-Type, Accept");
   headers.set("access-control-allow-methods", "GET, HEAD, OPTIONS");
   headers.set("access-control-expose-headers", "Content-Range, Content-Length, Accept-Ranges");
   headers.set("cache-control", "public, max-age=3600");
+  // Tell reverse proxies (nginx & friends) not to buffer this response.
+  headers.set("x-accel-buffering", "no");
   headers.set("x-stream-engine", "drive-streamer/1.0");
 
-  // 206 from Google flows through as 206 (Range honored).
-  // 200 flows through as 200 (full body / no Range requested).
-  const status = upstream.status === 206 ? 206 : 200;
+  // 206 → Range honored. 304 → cached, no body. 416 → range not satisfiable.
+  // Anything else (200) is a full-body response.
+  const status =
+    upstream.status === 206 || upstream.status === 304 || upstream.status === 416
+      ? upstream.status
+      : 200;
 
-  if (wantsHead) {
-    // HEAD must not carry a body.
+  // 304/416 MUST NOT carry a body per HTTP spec.
+  if (wantsHead || status === 304 || status === 416) {
     return new Response(null, { status, headers });
   }
 
