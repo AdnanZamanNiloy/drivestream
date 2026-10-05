@@ -28,7 +28,7 @@ Plays in VLC, mpv, IINA, and browser `<video>` tags, with instant seeking.
 **1. Copy your Drive link.** Open the video in Google Drive, click **Share**, make sure access is set to **Anyone with the link**, then click **Copy link**.
 
 <p align="center">
-  <img src="docs/copy-link.png" alt="Google Drive Share menu with Copy link and Anyone with the link access" width="520">
+  <img src="public/copy-link.png" alt="Google Drive Share menu with Copy link and Anyone with the link access" width="520">
 </p>
 
 **2. Paste it into [DriveStream](https://drivestream.space-z.ai/)** to get a permanent stream URL, along with the file name, size, and type.
